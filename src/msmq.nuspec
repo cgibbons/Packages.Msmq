@@ -8,7 +8,7 @@
     <owners>Particular Software</owners>
     <summary>Enable Windows MSMQ-Server Feature for NServiceBus</summary>
     <description>Enables Microsoft Message Queue Server</description>
-    <projectUrl>https://github.com/Particular/PlatformInstaller</projectUrl>
+    <projectUrl>https://github.com/Particular/Packages.Msmq</projectUrl>
     <tags>particular nservicebus msmq server</tags>
     <dependencies>
     </dependencies>
