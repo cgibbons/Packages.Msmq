@@ -1,13 +1,20 @@
-﻿$packageName = 'NServiceBus.MSMQ'
+﻿Set-StrictMode -Version 2
 
-function InstallDismFeatures($features) {
+$packageName = 'NServiceBus.MSMQ'
 
+function InstallDismFeatures($features,[Version] $osVersion) {
     if (DismRebootRequired) {
         throw "A reboot is required prior to installing this package"
     }
 
     $featureNames = [string]::Join(" ", @($features | % { "/FeatureName:$_"}))
-    $cmd = "dism.exe /Online  /Enable-Feature /NoRestart /Quiet $featureNames"
+    
+    if ($osVersion -gt '6.1') {
+        $cmd = "dism.exe /Online /Enable-Feature /NoRestart /Quiet /All $featureNames"
+    } else {
+        $cmd = "dism.exe /Online /Enable-Feature /NoRestart /Quiet $featureNames"
+    }
+
     Write-Host ("Executing: {0}" -f $cmd)
     Invoke-Expression $cmd
     CheckDismForUndesirables
@@ -22,7 +29,7 @@ function InstallDismFeatures($features) {
 
 function CheckDismForUndesirables() {
     $undesirables = @("MSMQ-Triggers", "MSMQ-ADIntegration", "MSMQ-HTTP", "MSMQ-Multicast", "MSMQ-DCOMProxy")
-    $msmqFeatures = dism.exe /Online /Get-Features /Format:Table | Select-String "^MSMQ" -List 
+    $msmqFeatures = @(dism.exe /Online /Get-Features /Format:Table | Select-String "^MSMQ" -List )
     $removeThese = @()
     
     foreach ($msmqFeature in $msmqFeatures) {
@@ -58,7 +65,7 @@ function StartMSMQ () {
 
 
 function DismRebootRequired() {
-    $info = dism.exe /Online /Get-Features /Format:Table | Select-String "Disable Pending", "Enable Pending" -List 
+    $info = @(dism.exe /Online /Get-Features /Format:Table | Select-String "Disable Pending", "Enable Pending" -List )
     return ($info.Count -gt 0)
 }
 
@@ -70,12 +77,12 @@ try {
     {
         { @("6.3", "6.2") -contains $_ }  {
              # Win 8.x and Win 2012
-             InstallDismFeatures(@("MSMQ-Server"))
+             InstallDismFeatures @("MSMQ-Server") $osVersion
         }
         
         "6.1" {  
               # Windows 7 and Windows 2008 R2
-             InstallDismFeatures(@("MSMQ-Server", "MSMQ-Container"))
+             InstallDismFeatures @("MSMQ-Server", "MSMQ-Container") $osVersion
          }
         "6.0" { 
             #TBD -  Windows Server 2008 and Vista
@@ -95,5 +102,5 @@ try {
     Write-ChocolateySuccess "$packageName"
 }
 catch {
-     Write-ChocolateyFailure "$packageName" "$($_.Exception.Message)"
+    Write-ChocolateyFailure "$packageName" Write-Host "$($_.Exception.Message)"
 }
