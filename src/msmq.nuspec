@@ -3,11 +3,11 @@
   <metadata>
     <id>nservicebus.msmq</id>
     <title>NServiceBus.MSMQ</title>
-    <version>1.0.20140220</version>
+    <version>0.1</version>
     <authors>Particular Software</authors>
     <owners>Particular Software</owners>
-    <summary>Enable Windows MSMQ-Server Feature for NServiceBus</summary>
-    <description>Enables Microsoft Message Queue Server</description>
+    <summary>NServiceBus recommended configuration for MSMQ</summary>
+    <description>Enables the MSMQ Windows features recommended for NServiceBus and starts the service</description>
     <projectUrl>https://github.com/Particular/Packages.Msmq</projectUrl>
     <tags>particular nservicebus msmq server</tags>
     <dependencies>
