@@ -1,16 +1,18 @@
 ﻿Set-StrictMode -Version 2
 
-function InstallDismFeatures($features,[Version] $osVersion) {
+function InstallDismFeatures($features, $ver) {
     if (DismRebootRequired) {
         throw "A reboot is required prior to installing this package"
     }
 
     $featureNames = [string]::Join(" ", @($features | % { "/FeatureName:$_"}))
     
-    if ($osVersion -gt '6.1') {
-        $cmd = "dism.exe /Online /Enable-Feature /NoRestart /Quiet /All $featureNames"
-    } else {
+
+    if ($ver -eq "6.1") {
+
         $cmd = "dism.exe /Online /Enable-Feature /NoRestart /Quiet $featureNames"
+    } else {
+        $cmd = "dism.exe /Online /Enable-Feature /NoRestart /Quiet /All $featureNames"
     }
 
     Write-Host ("Executing: {0}" -f $cmd) | Out-Default
@@ -54,12 +56,10 @@ function StartMSMQ () {
         throw "MSMQ service not found"
     }   
 
-
     if (@("Stopped", "Stopping","StopPending") -contains $msmqService.Status) {
         Restart-Service -Name "MSMQ" -Force -Verbose | Out-Default
     }
 }
-
 
 function DismRebootRequired() {
     $info = @(dism.exe /Online /Get-Features /Format:Table | Select-String "Disable Pending", "Enable Pending" -List )
@@ -76,25 +76,30 @@ try {
     {
         { @("6.3", "6.2") -contains $_ }  {
              # Win 8.x and Win 2012
-             InstallDismFeatures @("MSMQ-Server") $osVersion
+             Write-Host "Detected Windows 8.x/Windows 2012" | Out-Default
+             InstallDismFeatures @("MSMQ-Server") $ver
         }
         
         "6.1" {  
               # Windows 7 and Windows 2008 R2
-             InstallDismFeatures @("MSMQ-Server", "MSMQ-Container") $osVersion
+             Write-Host "Detected Windows 7/Windows 2008 R2" | Out-Default
+             InstallDismFeatures @("MSMQ-Server", "MSMQ-Container") $ver
          }
         "6.0" { 
             #TBD -  Windows Server 2008 and Vista
             $osInfo = Get-WmiObject Win32_OperatingSystem
             if ($osInfo.ProductType -eq 1) {
+                Write-Host "Detected Windows Vista" | Out-Default
                 throw "Unsupported Operating System"
             }
             else {
+                Write-Host "Detected Windows Windows 2008" | Out-Default
                 throw "Unsupported Operating System"
             }
         }
         default {
             # XP and Win2003 
+            Write-Host "Detected Windows XP / Windows 2003" | Out-Default
             throw "Unsupported Operating System"
         }
     }
