@@ -10,9 +10,9 @@ function InstallDismFeatures($features, $ver) {
 
     if ($ver -eq "6.1") {
 
-        $cmd = "dism.exe /Online /Enable-Feature /NoRestart /Quiet $featureNames"
+        $cmd = "$dism /Online /Enable-Feature /NoRestart /Quiet $featureNames"
     } else {
-        $cmd = "dism.exe /Online /Enable-Feature /NoRestart /Quiet /All $featureNames"
+        $cmd = "$dism /Online /Enable-Feature /NoRestart /Quiet /All $featureNames"
     }
 
     Write-Host ("Executing: {0}" -f $cmd) | Out-Default
@@ -29,7 +29,7 @@ function InstallDismFeatures($features, $ver) {
 
 function CheckDismForUndesirables() {
     $undesirables = @("MSMQ-Triggers", "MSMQ-ADIntegration", "MSMQ-HTTP", "MSMQ-Multicast", "MSMQ-DCOMProxy")
-    $msmqFeatures = @(dism.exe /Online /Get-Features /Format:Table | Select-String "^MSMQ" -List )
+    $msmqFeatures = @(Invoke-Expression "$dism /Online /Get-Features /Format:Table"| Select-String "^MSMQ" -List )
     $removeThese = @()
     
     foreach ($msmqFeature in $msmqFeatures) {
@@ -62,8 +62,26 @@ function StartMSMQ () {
 }
 
 function DismRebootRequired() {
-    $info = @(dism.exe /Online /Get-Features /Format:Table | Select-String "Disable Pending", "Enable Pending" -List )
+    $info = @(Invoke-Expression "$dism /Online /Get-Features /Format:Table" | Select-String "Disable Pending", "Enable Pending" -List )
     return ($info.Count -gt 0)
+}
+
+function IsProcess32Bit(){
+     return [IntPtr]::size -eq 4
+}
+
+#Is this a Wow64 powershell host
+function IsWow64() {
+    return (IsProcess32Bit) -and (test-path env:\PROCESSOR_ARCHITEW6432)
+}
+
+if (IsWow64) {
+    # sysnative is a virtual folder only available to 32 bit processes running under a 64bit OS
+    # sysnative is the 64bit version of system32 rather than the redirected folder
+    $dism = "$Env:SystemRoot\sysnative\dism.exe"
+}
+else{ 
+    $dism = "$Env:SystemRoot\system32\dism.exe"
 }
 
 try {
