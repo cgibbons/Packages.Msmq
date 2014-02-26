@@ -2,8 +2,8 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata>
     <id>nservicebus.msmq.install</id>
-    <title>NServiceBus.MSMQ.install</title>
-    <version>0.1</version>
+    <title>NServiceBus.MSMQ.Install</title>
+    <version>0.2</version>
     <authors>Particular Software</authors>
     <owners>Particular Software</owners>
     <summary>NServiceBus recommended configuration for MSMQ</summary>
