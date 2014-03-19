@@ -75,6 +75,16 @@ function IsWow64() {
     return (IsProcess32Bit) -and (test-path env:\PROCESSOR_ARCHITEW6432)
 }
 
+$currentIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+$currentPrincipal = new-object System.Security.Principal.WindowsPrincipal($currentIdentity)
+$adminRole = [ System.Security.Principal.WindowsBuiltInRole]::Administrator
+if (-not $currentPrincipal.IsInRole($adminRole)) {
+	Write-Host "Elevated permissions are required to run this script"
+	Write-Host "Use an elevated command prompt to complete these tasks"
+	exit 1
+}
+$transcribe = ($args.Count -gt 0)
+
 if (IsWow64) {
     # sysnative is a virtual folder only available to 32 bit processes running under a 64bit OS
     # sysnative is the 64bit version of system32 rather than the redirected folder
@@ -85,8 +95,9 @@ else{
 }
 
 try {
-    Start-Transcript -Path $args[0] -Force
-
+	if ($transcribe) {
+	    Start-Transcript -Path $args[0] -Force
+	}
     $osVersion = [Environment]::OSVersion.Version
     $ver = "{0}.{1}" -f $osVersion.Major, $osVersion.Minor
 
@@ -127,5 +138,7 @@ catch {
 	throw $_  
 }
 finally {
-    Stop-Transcript
+    if ($transcribe) {
+		Stop-Transcript
+	}
 }
