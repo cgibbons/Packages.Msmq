@@ -111,8 +111,14 @@ try {
         
         "6.1" {  
               # Windows 7 and Windows 2008 R2
-             Write-Host "Detected Windows 7/Windows 2008 R2" | Out-Default
-             InstallDismFeatures @("MSMQ-Server", "MSMQ-Container") $ver
+             
+			 if ($osInfo.ProductType -eq 1) {
+				Write-Host "Detected Windows 7" | Out-Default
+				InstallDismFeatures @("MSMQ-Server", "MSMQ-Container") $ver
+			} else {
+			 	Write-Host "Detected Windows 2008 R2" | Out-Default
+				InstallDismFeatures @("MSMQ-Server") $ver
+			}
          }
         "6.0" { 
             #TBD -  Windows Server 2008 and Vista
@@ -120,8 +126,7 @@ try {
             if ($osInfo.ProductType -eq 1) {
                 Write-Host "Detected Windows Vista" | Out-Default
                 throw "Unsupported Operating System"
-            }
-            else {
+            } else {
                 Write-Host "Detected Windows Windows 2008" | Out-Default
                 throw "Unsupported Operating System"
             }
