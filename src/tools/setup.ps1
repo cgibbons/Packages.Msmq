@@ -110,9 +110,9 @@ try {
         }
         
         "6.1" {  
-              # Windows 7 and Windows 2008 R2
-             
-			 if ($osInfo.ProductType -eq 1) {
+            # Windows 7 and Windows 2008 R2
+            $osInfo = Get-WmiObject Win32_OperatingSystem
+			if ($osInfo.ProductType -eq 1) {
 				Write-Host "Detected Windows 7" | Out-Default
 				InstallDismFeatures @("MSMQ-Server", "MSMQ-Container") $ver
 			} else {
