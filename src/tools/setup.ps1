@@ -15,12 +15,12 @@ function InstallDismFeatures($features, $ver) {
         $cmd = "$dism /Online /Enable-Feature /NoRestart /Quiet /All $featureNames"
     }
 
-    Write-Host ("Executing: {0}" -f $cmd) | Out-Default
-    Invoke-Expression $cmd | Out-Default
+    Write-Host ("Executing: {0}" -f $cmd) 
+    Invoke-Expression $cmd 
     CheckDismForUndesirables
     
     if (DismRebootRequired) {
-        Write-Host "A reboot is required to complete the MSMQ installation" | Out-Default
+        Write-Host "A reboot is required to complete the MSMQ installation" 
     }
     else {
         StartMSMQ    
@@ -45,7 +45,7 @@ function CheckDismForUndesirables() {
     
     if ($removeThese.Count -gt 0 ) {
          $featureNames = [string]::Join(" ", @($removeThese | % { "/FeatureName:$_"}))
-         Write-Warning "Undesirable MSMQ feature(s) detected. Please remove using this command: `r`n`t dism.exe /Online /Disable-Feature $featureNames `r`nNote: This command is case sensitive"  | Out-Default
+         Write-Warning "Undesirable MSMQ feature(s) detected. Please remove using this command: `r`n`t dism.exe /Online /Disable-Feature $featureNames `r`nNote: This command is case sensitive"  
     } 
 }
 
@@ -57,7 +57,7 @@ function StartMSMQ () {
     }   
 
     if (@("Stopped", "Stopping","StopPending") -contains $msmqService.Status) {
-        Restart-Service -Name "MSMQ" -Force -Verbose | Out-Default
+        Restart-Service -Name "MSMQ" -Force -Verbose 
     }
 }
 
@@ -105,7 +105,7 @@ try {
     {
         { @("6.3", "6.2") -contains $_ }  {
              # Win 8.x and Win 2012
-             Write-Host "Detected Windows 8.x/Windows 2012" | Out-Default
+             Write-Host "Detected Windows 8.x/Windows 2012" 
              InstallDismFeatures @("MSMQ-Server") $ver
         }
         
@@ -113,10 +113,10 @@ try {
             # Windows 7 and Windows 2008 R2
             $osInfo = Get-WmiObject Win32_OperatingSystem
 			if ($osInfo.ProductType -eq 1) {
-				Write-Host "Detected Windows 7" | Out-Default
+				Write-Host "Detected Windows 7" 
 				InstallDismFeatures @("MSMQ-Server", "MSMQ-Container") $ver
 			} else {
-			 	Write-Host "Detected Windows 2008 R2" | Out-Default
+			 	Write-Host "Detected Windows 2008 R2" 
 				InstallDismFeatures @("MSMQ-Server") $ver
 			}
          }
@@ -124,23 +124,19 @@ try {
             #TBD -  Windows Server 2008 and Vista
             $osInfo = Get-WmiObject Win32_OperatingSystem
             if ($osInfo.ProductType -eq 1) {
-                Write-Host "Detected Windows Vista" | Out-Default
+                Write-Host "Detected Windows Vista" 
                 throw "Unsupported Operating System"
             } else {
-                Write-Host "Detected Windows Windows 2008" | Out-Default
+                Write-Host "Detected Windows Windows 2008" 
                 throw "Unsupported Operating System"
             }
         }
         default {
             # XP and Win2003 
-            Write-Host "Detected Windows XP / Windows 2003" | Out-Default
+            Write-Host "Detected Windows XP / Windows 2003" 
             throw "Unsupported Operating System"
         }
     }
-}
-catch {
-    $_ | Out-Default
-	throw $_  
 }
 finally {
     if ($transcribe) {
