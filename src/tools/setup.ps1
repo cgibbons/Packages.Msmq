@@ -103,6 +103,11 @@ try {
 
     switch ($ver) 
     {
+        "10.0" {
+            # Win 8.x and Win 2012
+             Write-Host "Detected Windows 10" 
+             InstallDismFeatures @("MSMQ-Server") $ver
+        }
         { @("6.3", "6.2") -contains $_ }  {
              # Win 8.x and Win 2012
              Write-Host "Detected Windows 8.x/Windows 2012" 
